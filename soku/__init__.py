@@ -17,16 +17,17 @@ class Meta(type):
 
 
 class Attribute:
-    def __init__(self, kind, *, validate=None):
+    def __init__(self, kind, *, validate=None, error=None):
         self.kind = kind
         self.validate = validate
+        self.error = error
 
     def __set_name__(self, owner, name):
         self.name = name
 
     def __set__(self, instance, value):
         if self.validate and not self.validate(value):
-            raise Error(f'Validation error for attribute {self.name}.')
+            raise Error(self.error or f'Validation error for attribute {self.name}.')
         instance.__dict__[self.name] = value
 
     def __get__(self, instance, owner):
