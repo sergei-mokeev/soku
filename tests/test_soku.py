@@ -1,19 +1,20 @@
-from soku import Class, Attribute
+import soku
 
 
-class B(Class):
-    a = Attribute(int)
-    b = Attribute(list)
-    c = Attribute(dict)
+def test(value):
+    return value.upper()
 
 
-class A(Class):
-    a = Attribute(int)
-    b = Attribute(int)
+class A(soku.Class):
+    a = soku.Attribute()
+    b = soku.Attribute()
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
 
 
-a = A(a=3, b=2)
+print(A(5, 6).serialize())
+
+a = soku.Class.deserialize({'a': 'asd', 'b': 2})
 print(a.serialize())
-
-b = Class.deserialize({'b': [1, 2], 'c': {1: 1}, 'a': 1})
-print(b.serialize())

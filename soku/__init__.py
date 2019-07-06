@@ -1,33 +1,22 @@
 from inspect import getmembers
 
 
-class Error(Exception):
-    pass
-
-
 class Meta(type):
-    __classes__ = {}
+    __soku_clss__ = {}
 
     def __new__(mcs, name, bases, dct):
         cls = super().__new__(mcs, name, bases, dct)
-        attrs = {attr: obj.kind for attr, obj in getmembers(cls) if isinstance(obj, Attribute)}
-        if attrs:
-            Meta.__classes__.update({cls: attrs})
+        cls.__soku_attrs__ = {k: v for k, v in getmembers(cls) if isinstance(v, Attribute)}
+        key = sum([hash(a) for a in sorted(cls.__soku_attrs__)])
+        mcs.__soku_clss__[key] = cls
         return cls
 
 
 class Attribute:
-    def __init__(self, kind, *, validate=None, error=None):
-        self.kind = kind
-        self.validate = validate
-        self.error = error
-
     def __set_name__(self, owner, name):
         self.name = name
 
     def __set__(self, instance, value):
-        if self.validate and not self.validate(value):
-            raise Error(self.error or f'Validation error for attribute {self.name}.')
         instance.__dict__[self.name] = value
 
     def __get__(self, instance, owner):
@@ -35,16 +24,17 @@ class Attribute:
 
 
 class Class(metaclass=Meta):
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    def serialize(self) -> dict:
+        return {k: self.__dict__.get(k) for k in self.__soku_attrs__}
 
-    def serialize(self):
-        return self.__dict__
-
-    @staticmethod
-    def deserialize(dct):
-        for cls, attrs in Class.__classes__.items():
-            if attrs == {attr: type(value) for attr, value in dct.items()}:
-                return cls(**dct)
-        raise Error('Class with this attributes not found.')
+    @classmethod
+    def deserialize(cls, dct: dict):
+        if cls is Class:
+            key = sum([hash(a) for a in sorted([k for k in dct])])
+            cls = cls.__soku_clss__.get(key)
+            if not cls:
+                raise ValueError(f'Unknown class. Class with this attributes not found.')
+            [setattr(cls, a, v) for a, v in cls.__soku_attrs__.items()]
+            return cls(**dct)
+        else:
+            return cls(**dct)
