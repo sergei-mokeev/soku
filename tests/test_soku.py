@@ -3,10 +3,11 @@ import unittest
 from datetime import datetime
 
 
-def is_int(_, value):
-    if isinstance(value, int):
-        return True
-    return False
+class IsInt:
+    def __call__(self, name, value):
+        if isinstance(value, int):
+            return True
+        return False
 
 
 def is_int_with_exc(name, value):
@@ -24,7 +25,7 @@ def post(value):
 
 
 class A(soku.Class):
-    a = soku.Attribute(validate=is_int)
+    a = soku.Attribute(validate=IsInt())
     b = soku.Attribute()
 
     def __init__(self, a, b):

@@ -25,9 +25,9 @@ class Attribute:
         self.name = name
 
     def __set__(self, instance, value):
-        if self.validate and not self.validate(self.name, value):
+        if callable(self.validate) and not self.validate(self.name, value):
             raise ValueError(f'Attribute {self.name} validation error.')
-        if self.serialize:
+        if callable(self.serialize):
             value = self.serialize(value)
         instance.__dict__[self.name] = value
 
@@ -41,7 +41,7 @@ class Class(metaclass=Meta):
         dct = {}
         for k, v in self.__soku_attrs__.items():
             dct.update({k: v.deserialize(
-                self.__dict__.get(k))}) if v.deserialize else dct.update(
+                self.__dict__.get(k))}) if callable(v.deserialize) else dct.update(
                 {k: self.__dict__.get(k)})
         return dct
 
