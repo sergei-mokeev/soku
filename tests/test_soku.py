@@ -1,8 +1,15 @@
 import soku
+import unittest
 from datetime import datetime
 
 
-def valid(name, value):
+def is_int(_, value):
+    if isinstance(value, int):
+        return True
+    return False
+
+
+def is_int_with_exc(name, value):
     if type(value) is not int:
         raise ValueError(f'Test validation exception in attribute {name}')
     return True
@@ -17,7 +24,7 @@ def post(value):
 
 
 class A(soku.Class):
-    a = soku.Attribute(validate=valid, serialize=pre, deserialize=post)
+    a = soku.Attribute(validate=is_int)
     b = soku.Attribute()
 
     def __init__(self, a, b):
@@ -26,15 +33,41 @@ class A(soku.Class):
 
 
 class B(A):
+    a = soku.Attribute(validate=is_int_with_exc, serialize=pre, deserialize=post)
     c = soku.Attribute()
 
-    def __init__(self, a, b, c):
+    def __init__(self, a, b, c=None):
         super().__init__(a, b)
         self.c = c
 
 
-a = soku.Class.deserialize({'a': 1562423485, 'b': 2})
-print(a.a)
-print(a.serialize())
+class TestSoKuCase(unittest.TestCase):
+    def test_serialize(self):
+        a = A(a=1, b=2)
+        self.assertEqual(a.serialize(), {'a': 1, 'b': 2})
 
-print(B.deserialize({'a': 1562423485, 'b': 2, 'c': 3}).serialize())
+    def test_deserialize(self):
+        a = soku.Class.deserialize({'a': 1, 'b': 2})
+        self.assertIsInstance(a, A)
+        self.assertFalse(isinstance(a, B))
+        a = soku.Class.deserialize({'c': 1562487966, 'a': 1, 'b': 2})
+        self.assertIsInstance(a, B)
+        a = B.deserialize({'a': 1, 'b': 2})
+        self.assertTrue(a.__class__.__name__ == 'B')
+
+    def test_attr_validation(self):
+        self.assertRaises(ValueError, soku.Class.deserialize, {'a': 'str', 'c': 1, 'b': 2})
+        self.assertRaises(ValueError, soku.Class.deserialize, {'a': 'str', 'b': 2})
+
+    def test_attr_serialize(self):
+        a = soku.Class.deserialize({'a': 1562487966, 'c': 1, 'b': 2})
+        self.assertIsInstance(a.a, datetime)
+
+    def test_attr_deserialize(self):
+        a = soku.Class.deserialize({'a': 1562487966, 'c': 1, 'b': 2})
+        self.assertIsInstance(a.a, datetime)
+        self.assertEqual(a.serialize(), {'a': 1562487966, 'c': 1, 'b': 2})
+
+    def test_class_not_found(self):
+        with self.assertRaises(ValueError):
+            soku.Class.deserialize({'z': 1, 'y': 2})
