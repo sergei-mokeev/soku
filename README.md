@@ -1,7 +1,5 @@
-SoKu - serialize and deserialize python object to JSON and back.
-====
-
-# About
+About SoKu
+==========
 
 Small library for serialize and deserialize python object to JSON and back. This library is useful for conversation between microservices, see examples. It can to serialize from object and back, validate when deserialize and use custom serializer.
 
