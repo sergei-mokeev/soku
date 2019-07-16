@@ -42,6 +42,13 @@ class B(A):
         self.c = c
 
 
+class C(soku.Class):
+    asd = soku.Attribute(name='ASD')
+
+    def __init__(self, asd):
+        self.asd = asd
+
+
 class TestSoKuCase(unittest.TestCase):
     def test_serialize(self):
         a = A(a=1, b=2)
@@ -72,3 +79,12 @@ class TestSoKuCase(unittest.TestCase):
     def test_class_not_found(self):
         with self.assertRaises(ValueError):
             soku.Class.deserialize({'z': 1, 'y': 2})
+
+    def test_attribute_rename(self):
+        a = C(asd=123)
+        self.assertEqual(a.asd, 123)
+        self.assertEqual(a.serialize(), {'ASD': 123})
+
+        a = soku.Class.deserialize({'ASD': 'test'})
+        self.assertEqual(a.asd, 'test')
+        self.assertEqual(a.serialize(), {'ASD': 'test'})

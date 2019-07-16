@@ -80,3 +80,25 @@ obj = soku.Class.deserialize({'date': 1562487966, 'version': '1.0'})
 print(obj.date)  # 2019-07-07 11:26:06
 
 ```
+
+# Object attribute map to JSON field name
+
+```python
+import soku
+from dataclasses import dataclass
+
+
+@dataclass
+class Test(soku.Class):
+    user_id: int = soku.Attribute(name='userId')
+    
+    
+test = Test(user_id=12345)
+
+print(test.user_id)  # 12345
+print(test.serialize())  # {'userId': 12345}
+
+test = soku.Class.deserialize({'userId': 12345})
+print(test.user_id)  # 12345
+
+```
