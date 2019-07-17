@@ -1,53 +1,63 @@
-from inspect import getmembers
+from inspect import getmembers, isclass
 from typing import Callable
 
 
 class Meta(type):
-    __soku_clss__ = {}
+    __classes__ = {}
 
     def __new__(mcs, name, bases, dct):
         cls = super().__new__(mcs, name, bases, dct)
-        cls.__soku_attrs__ = {v.name or k: v for k, v in getmembers(cls) if isinstance(v, Attribute)}
-        mcs.__soku_clss__[sum([hash(a) for a in sorted(cls.__soku_attrs__)])] = cls
+        attributes = {value.key or key: value for key, value in getmembers(cls) if isinstance(value, Attribute)}
+        mcs.__classes__[sum([hash(attribute) for attribute in sorted(attributes)])] = cls
         return cls
 
 
 class Attribute:
-    def __init__(self, *, validate: Callable = None,
-                 serialize: Callable = None, deserialize: Callable = None, name: str = None):
-        self.validate = validate
-        self.serialize = serialize
-        self.deserialize = deserialize
-        self.name = name
+    def __init__(self, *, key: str = None, validate: Callable = None,
+                 deserialize: Callable = None, serialize: Callable = None, attachment=None):
+        self.key = key
+        self.validate = validate if callable(validate) else None
+        self.deserialize = deserialize if callable(deserialize) else None
+        self.serialize = serialize if callable(serialize) else None
+        self.attachment = attachment if isclass(attachment) and issubclass(attachment, Class) else None
 
     def __set_name__(self, owner, name):
-        self.__name = name
+        self.name = name
 
     def __set__(self, instance, value):
-        if callable(self.validate) and not self.validate(self.__name, value):
-            raise ValueError(f'Attribute {self.__name} validation error.')
-        if callable(self.deserialize):
+        if self.validate and not self.validate(self.name, value):
+            raise ValueError(f'Attribute {self.name} validation error.')
+        if self.deserialize:
             value = self.deserialize(value)
-        instance.__dict__[self.__name] = value
+        if self.attachment:
+            value = self.attachment.deserialize(value)
+        instance.__dict__[self.name] = value
 
     def __get__(self, instance, owner):
-        return instance.__dict__[self.__name]
+        return instance.__dict__[self.name]
 
 
 class Class(metaclass=Meta):
     def serialize(self) -> dict:
-        dct = {}
-        for k, v in {k: v for k, v in getmembers(self.__class__) if isinstance(v, Attribute)}.items():
-            dct.update({v.name or k: v.serialize(getattr(self, k)) if callable(v.serialize) else getattr(self, k)})
-        return dct
+        result = {}
+        for key, value in self.__dict__.items():
+            attribute = self.__class__.__dict__.get(key)
+            if isinstance(attribute, Attribute):
+                key = attribute.key or key
+                if attribute.serialize:
+                    value = attribute.serialize(value)
+                if attribute.attachment:
+                    value = attribute.attachment.serialize(value)
+            result.update({key: value})
+        return result
 
     @classmethod
     def deserialize(cls, data: dict):
         if cls is Class:
-            cls = cls.__soku_clss__.get(sum([hash(a) for a in sorted([k for k in data])]))
+            cls = cls.__classes__.get(sum([hash(key) for key in sorted([key for key in data])]))
             if not cls:
                 raise ValueError(f'Unknown class. Class with this attributes not found.')
-        dct = {}
-        for k, v in {k: v for k, v in getmembers(cls) if isinstance(v, Attribute)}.items():
-            dct.update({k: data.get(v.name) if v.name else data.get(k)})
-        return cls(**dct)
+        result = {}
+        for key, value in {k: v for k, v in getmembers(cls) if isinstance(v, Attribute)}.items():
+            result.update({key: data.get(value.key) if value.key else data.get(key)})
+        return cls(**result)

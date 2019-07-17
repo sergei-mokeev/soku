@@ -28,6 +28,12 @@ class Message(soku.Class):
 import soku
 
 
+class Message(soku.Class):
+    version = soku.Attribute()
+    service = soku.Attribute()
+    data = soku.Attribute()
+
+
 dct = {'version': '1.0', 'service': 'gateway', 'data': [1, 2, 3, 4, 5]}
 
 
@@ -45,7 +51,7 @@ for item in message.data:
 
 ```
 
-# Validation and custom serialize/deserialize
+# Validation and custom serialize and deserialize
 
 ```python
 import soku
@@ -72,7 +78,7 @@ def post(value):
 
 class Message(soku.Class):
     version = soku.Attribute(validate=OneOf(['1.0', '2.0']))
-    date = soku.Attribute(serialize=pre, deserialize=post)
+    date = soku.Attribute(deserialize=pre, serialize=post)
 
 
 obj = soku.Class.deserialize({'date': 1562487966, 'version': '1.0'})
@@ -101,4 +107,38 @@ print(test.serialize())  # {'userId': 12345}
 test = soku.Class.deserialize({'userId': 12345})
 print(test.user_id)  # 12345
 
+```
+
+# Recursive serialization and deserialization for nested classes
+
+```python
+from soku import Class, Attribute
+from dataclasses import dataclass
+
+
+@dataclass
+class SubNested(Class):
+    @staticmethod
+    def asd():
+        return 'Hello world!'
+
+
+@dataclass
+class Nested(Class):
+    a: Attribute = Attribute(attachment=SubNested)
+    b: Attribute = Attribute()
+
+    def test(self):
+        pass
+
+
+@dataclass
+class Test(Class):
+    a: Attribute = Attribute()
+    b: Attribute = Attribute(attachment=Nested)
+
+
+test = Class.deserialize({'a': 1, 'b': {'a': 2, 'b': 3}})
+print(test.b.a.asd())  # Hello world!
+print(test.serialize())  # {'a': 1, 'b': {'a': {}, 'b': 3}}
 ```

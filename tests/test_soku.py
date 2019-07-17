@@ -43,7 +43,7 @@ class B(A):
 
 
 class C(soku.Class):
-    asd = soku.Attribute(name='ASD')
+    asd = soku.Attribute(key='ASD')
 
     def __init__(self, asd):
         self.asd = asd
