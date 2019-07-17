@@ -26,8 +26,8 @@ class Attribute:
     def __set__(self, instance, value):
         if callable(self.validate) and not self.validate(self.__name, value):
             raise ValueError(f'Attribute {self.__name} validation error.')
-        if callable(self.serialize):
-            value = self.serialize(value)
+        if callable(self.deserialize):
+            value = self.deserialize(value)
         instance.__dict__[self.__name] = value
 
     def __get__(self, instance, owner):
@@ -38,7 +38,7 @@ class Class(metaclass=Meta):
     def serialize(self) -> dict:
         dct = {}
         for k, v in {k: v for k, v in getmembers(self.__class__) if isinstance(v, Attribute)}.items():
-            dct.update({v.name or k: v.deserialize(getattr(self, k)) if callable(v.deserialize) else getattr(self, k)})
+            dct.update({v.name or k: v.serialize(getattr(self, k)) if callable(v.serialize) else getattr(self, k)})
         return dct
 
     @classmethod

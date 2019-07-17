@@ -34,7 +34,7 @@ class A(soku.Class):
 
 
 class B(A):
-    a = soku.Attribute(validate=is_int_with_exc, serialize=pre, deserialize=post)
+    a = soku.Attribute(validate=is_int_with_exc, serialize=post, deserialize=pre)
     c = soku.Attribute()
 
     def __init__(self, a, b, c=None):

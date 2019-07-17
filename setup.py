@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='soku',
-    version='1.1.0',
+    version='1.1.1',
     author='Sergey Mokeyev',
     author_email='sergey.mokeyev@gmail.com',
     description='Serialize and deserialize python object to JSON and back',
