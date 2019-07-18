@@ -30,7 +30,7 @@ class Attribute:
         if self.deserialize:
             value = self.deserialize(value)
         if self.attachment:
-            value = self.attachment.deserialize(value)
+            value = value if isinstance(value, self.attachment) else self.attachment.deserialize(value)
         instance.__dict__[self.name] = value
 
     def __get__(self, instance, owner):

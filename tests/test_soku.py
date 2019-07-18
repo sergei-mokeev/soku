@@ -1,6 +1,7 @@
 import soku
 import unittest
 from datetime import datetime
+from dataclasses import dataclass
 
 
 class IsInt:
@@ -45,8 +46,14 @@ class B(A):
 class C(soku.Class):
     asd = soku.Attribute(key='ASD')
 
-    def __init__(self, asd):
+    def __init__(self, asd='default'):
         self.asd = asd
+
+
+@dataclass
+class D(soku.Class):
+    a: soku.Attribute = soku.Attribute(attachment=A)
+    c: soku.Attribute = soku.Attribute(attachment=C)
 
 
 class TestSoKuCase(unittest.TestCase):
@@ -88,3 +95,18 @@ class TestSoKuCase(unittest.TestCase):
         a = soku.Class.deserialize({'ASD': 'test'})
         self.assertEqual(a.asd, 'test')
         self.assertEqual(a.serialize(), {'ASD': 'test'})
+
+    def test_nested_classes(self):
+        a = A(a=1, b=2)
+        c = C('asd')
+        d = D(a=a, c=c)
+        self.assertEqual(d.serialize(), {'a': {'a': 1, 'b': 2}, 'c': {'ASD': 'asd'}})
+        dd = soku.Class.deserialize({'a': {'a': 1, 'b': 2}, 'c': {'ASD': 'asd'}})
+        self.assertEqual(dd.c.asd, 'asd')
+        dd.c.asd = 'test'
+        self.assertEqual(dd.c.asd, 'test')
+        self.assertEqual(dd.serialize(), {'a': {'a': 1, 'b': 2}, 'c': {'ASD': 'test'}})
+
+    def test_default(self):
+        c = C()
+        self.assertEqual(c.serialize(), {'ASD': 'default'})
