@@ -4,12 +4,12 @@ from inspect import getmembers
 
 class Attribute:
     def __init__(self, *, key: str = None, validate: Callable = None,
-                 deserialize: Callable = None, serialize: Callable = None, attachment: Type['Class'] = None):
+                 deserialize: Callable = None, serialize: Callable = None, attach: Type['Class'] = None):
         self.key = key
         self.validate = validate
         self.deserialize = deserialize
         self.serialize = serialize
-        self.attachment = attachment
+        self.attach = attach
 
     def __set_name__(self, owner, name):
         self.name = name
@@ -29,8 +29,8 @@ class Class:
             value = getattr(self, key)
             if attribute.serialize:
                 value = attribute.serialize(value)
-            if attribute.attachment:
-                value = attribute.attachment.serialize(value)
+            if attribute.attach:
+                value = attribute.attach.serialize(value)
             result.update({attribute.key or key: value})
         return result
 
@@ -44,7 +44,7 @@ class Class:
                 raise ValueError(f'Key {attribute.key or key} validation error.')
             if attribute.deserialize:
                 value = attribute.deserialize(value)
-            if attribute.attachment:
-                value = attribute.attachment.deserialize(value)
+            if attribute.attach:
+                value = attribute.attach.deserialize(value)
             result.update({key: value})
         return cls(**result)

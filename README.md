@@ -39,7 +39,7 @@ class FullName(Class):
 @dataclass
 class Person(Class):
     id: int = Attribute(validate=is_int)
-    full_name: FullName = Attribute(key='fullName', attachment=FullName)
+    full_name: FullName = Attribute(key='fullName', attach=FullName)
 
 
 @dataclass
