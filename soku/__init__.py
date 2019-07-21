@@ -40,8 +40,8 @@ class Class:
         for key, attribute in {key: attribute for key, attribute
                                in getmembers(cls) if isinstance(attribute, Attribute)}.items():
             value = data.get(attribute.key or key)
-            if attribute.validate and not attribute.validate(attribute.name, value):
-                raise ValueError(f'Attribute {attribute.name} validation error.')
+            if attribute.validate and not attribute.validate(attribute.key or key, value):
+                raise ValueError(f'Key {attribute.key or key} validation error.')
             if attribute.deserialize:
                 value = attribute.deserialize(value)
             if attribute.attachment:

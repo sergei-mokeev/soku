@@ -18,10 +18,8 @@ from dataclasses import dataclass
 from soku import Class, Attribute
 
 
-def is_int(name, value):  # validator must be callable and return bool or raise exception
-    if type(value) is not int:
-        raise ValueError(f'Attribute {name} validation error.')  # or just return type(value) is int
-    return True
+def is_int(_, value):  # validator must be callable and return bool or raise exception
+    return type(value) is int
 
 
 def timestamp_to_date(value):
@@ -49,7 +47,7 @@ class User(Person):
     birthday: datetime = Attribute(deserialize=timestamp_to_date, serialize=date_to_timestamp)
 
 
-if __name__ == '__main__'
+if __name__ == '__main__':
     # create instance and serialize
     full_name = FullName('John', 'Smith')
     user = User(12345, full_name, datetime.fromtimestamp(1193875200))
@@ -60,5 +58,10 @@ if __name__ == '__main__'
     user = User.deserialize({'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
     print(user.serialize())  # {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
 
-    # validate raise ValueError: Attribute id validation error.
-    User.deserialize({'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
+    # validate
+    try:
+        User.deserialize({'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
+    except ValueError as exc:
+        print(exc)  # Key id validation error.
+
+```

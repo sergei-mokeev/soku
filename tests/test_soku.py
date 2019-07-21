@@ -36,7 +36,8 @@ class User(Person):
 class Tests(TestCase):
     def test_create_instance_and_serialize(self):
         full_name = FullName('John', 'Smith')
-        user = User(12345, full_name, datetime.fromtimestamp(1193875200))
+        date = datetime.fromtimestamp(1193875200)
+        user = User(12345, full_name, date)
         self.assertEqual(user.id, 12345)
         self.assertIsInstance(user.full_name, FullName)
         self.assertIsInstance(user.birthday, datetime)
@@ -62,4 +63,4 @@ class Tests(TestCase):
         with self.assertRaises(ValueError) as context:
             User.deserialize(
                 {'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
-        self.assertIn('Attribute id validation error.', context.exception.args)
+        self.assertIn('Key id validation error.', context.exception.args)
