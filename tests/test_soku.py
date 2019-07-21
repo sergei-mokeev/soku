@@ -59,8 +59,6 @@ class Tests(TestCase):
         )
 
     def test_validate(self):
-        User.deserialize(
-            {'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
         with self.assertRaises(ValueError) as context:
             User.deserialize(
                 {'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
