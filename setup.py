@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='soku',
-    version='1.2.1',
+    version='2.0.0',
     author='Sergey Mokeyev',
     author_email='sergey.mokeyev@gmail.com',
     description='Serialize and deserialize python object to JSON and back',
@@ -18,8 +18,7 @@ setuptools.setup(
     ],
     classifiers=[
         'Programming Language :: Python :: 3.7',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Operating System :: POSIX',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
     ],
     install_requires=[]
 )

@@ -1,63 +1,50 @@
-from inspect import getmembers, isclass
-from typing import Callable
-
-
-class Meta(type):
-    __classes__ = {}
-
-    def __new__(mcs, name, bases, dct):
-        cls = super().__new__(mcs, name, bases, dct)
-        attributes = {value.key or key: value for key, value in getmembers(cls) if isinstance(value, Attribute)}
-        mcs.__classes__[sum([hash(attribute) for attribute in sorted(attributes)])] = cls
-        return cls
+from typing import Callable, Type
+from inspect import getmembers
 
 
 class Attribute:
     def __init__(self, *, key: str = None, validate: Callable = None,
-                 deserialize: Callable = None, serialize: Callable = None, attachment=None):
+                 deserialize: Callable = None, serialize: Callable = None, attachment: Type['Class'] = None):
         self.key = key
-        self.validate = validate if callable(validate) else None
-        self.deserialize = deserialize if callable(deserialize) else None
-        self.serialize = serialize if callable(serialize) else None
-        self.attachment = attachment if isclass(attachment) and issubclass(attachment, Class) else None
+        self.validate = validate
+        self.deserialize = deserialize
+        self.serialize = serialize
+        self.attachment = attachment
 
     def __set_name__(self, owner, name):
         self.name = name
 
     def __set__(self, instance, value):
-        if self.validate and not self.validate(self.name, value):
-            raise ValueError(f'Attribute {self.name} validation error.')
-        if self.deserialize:
-            value = self.deserialize(value)
-        if self.attachment:
-            value = value if isinstance(value, self.attachment) else self.attachment.deserialize(value)
         instance.__dict__[self.name] = value
 
     def __get__(self, instance, owner):
         return instance.__dict__[self.name]
 
 
-class Class(metaclass=Meta):
+class Class:
     def serialize(self) -> dict:
         result = {}
-        for key, value in self.__dict__.items():
-            attribute = self.__class__.__dict__.get(key)
-            if isinstance(attribute, Attribute):
-                key = attribute.key or key
-                if attribute.serialize:
-                    value = attribute.serialize(value)
-                if attribute.attachment:
-                    value = attribute.attachment.serialize(value)
-            result.update({key: value})
+        for key, attribute in {key: attribute for key, attribute
+                               in getmembers(self.__class__) if isinstance(attribute, Attribute)}.items():
+            value = getattr(self, key)
+            if attribute.serialize:
+                value = attribute.serialize(value)
+            if attribute.attachment:
+                value = attribute.attachment.serialize(value)
+            result.update({attribute.key or key: value})
         return result
 
     @classmethod
-    def deserialize(cls, data: dict):
-        if cls is Class:
-            cls = cls.__classes__.get(sum([hash(key) for key in sorted([key for key in data])]))
-            if not cls:
-                raise ValueError(f'Unknown class. Class with this attributes not found.')
+    def deserialize(cls, data: dict) -> 'Class':
         result = {}
-        for key, value in {k: v for k, v in getmembers(cls) if isinstance(v, Attribute)}.items():
-            result.update({key: data.get(value.key) if value.key else data.get(key)})
+        for key, attribute in {key: attribute for key, attribute
+                               in getmembers(cls) if isinstance(attribute, Attribute)}.items():
+            value = data.get(attribute.key or key)
+            if attribute.validate and not attribute.validate(attribute.name, value):
+                raise ValueError(f'Attribute {attribute.name} validation error.')
+            if attribute.deserialize:
+                value = attribute.deserialize(value)
+            if attribute.attachment:
+                value = attribute.attachment.deserialize(value)
+            result.update({key: value})
         return cls(**result)

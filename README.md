@@ -1,7 +1,8 @@
-About SoKu
-==========
+#SoKu
 
-Small library for serialize and deserialize python object to JSON and back. This library is useful for conversation between microservices, see examples. It can to serialize from object and back, validate when deserialize and use custom serializer.
+SoKu is small library for serialize and deserialize python object to JSON and back. 
+This library is useful for conversation between micro services, see example. 
+It can to serialize from object and back, validate when deserialize and use custom deserializer and serializer.
 
 # Installation
 
@@ -9,136 +10,55 @@ Small library for serialize and deserialize python object to JSON and back. This
 pip install soku
 ```
 
-# Create class
+# Example
 
 ```python
-import soku
-
-
-class Message(soku.Class):
-    version = soku.Attribute()
-    service = soku.Attribute()
-    data = soku.Attribute()
-    
-``` 
-
-# Deserialize from dictionary to message object and back
-
-```python
-import soku
-
-
-class Message(soku.Class):
-    version = soku.Attribute()
-    service = soku.Attribute()
-    data = soku.Attribute()
-
-
-dct = {'version': '1.0', 'service': 'gateway', 'data': [1, 2, 3, 4, 5]}
-
-
-# try find class by dictionary attributes
-message = soku.Class.deserialize(dct)
-
-# or choice class for deserialization
-message = Message.deserialize(message.serialize())
-
-print(message.serialize())  # {'version': '1.0', 'service': 'gateway', 'data': [1, 2, 3, 4, 5]}
-print(message.version)   # 1.0
-
-for item in message.data:
-    print(item)  # 1 2 3 4 5
-
-```
-
-# Validation and custom serialize and deserialize
-
-```python
-import soku
 from datetime import datetime
+from dataclasses import dataclass
+from soku import Class, Attribute
 
 
-class OneOf:
-    def __init__(self, lst):
-        self.lst = lst
-        
-    def __call__(self, name, value):
-        if value not in self.lst:
-            raise ValueError(f'Attribute {name} validation error')
-        return True
-        
-        
-def pre(value):
+def is_int(name, value):  # validator must be callable and return bool or raise exception
+    if type(value) is not int:
+        raise ValueError(f'Attribute {name} validation error.')  # or just return type(value) is int
+    return True
+
+
+def timestamp_to_date(value):
     return datetime.fromtimestamp(value)
 
 
-def post(value):
+def date_to_timestamp(value):
     return int(value.timestamp())
 
 
-class Message(soku.Class):
-    version = soku.Attribute(validate=OneOf(['1.0', '2.0']))
-    date = soku.Attribute(deserialize=pre, serialize=post)
-
-
-obj = soku.Class.deserialize({'date': 1562487966, 'version': '1.0'})
-
-print(obj.date)  # 2019-07-07 11:26:06
-
-```
-
-# Object attribute map to JSON field name
-
-```python
-import soku
-from dataclasses import dataclass
+@dataclass
+class FullName(Class):
+    first_name: str = Attribute(key='firstName')
+    last_name: str = Attribute(key='lastName')
 
 
 @dataclass
-class Test(soku.Class):
-    user_id: int = soku.Attribute(name='userId')
-    
-    
-test = Test(user_id=12345)
-
-print(test.user_id)  # 12345
-print(test.serialize())  # {'userId': 12345}
-
-test = soku.Class.deserialize({'userId': 12345})
-print(test.user_id)  # 12345
-
-```
-
-# Recursive serialization and deserialization for nested classes
-
-```python
-from soku import Class, Attribute
-from dataclasses import dataclass
+class Person(Class):
+    id: int = Attribute(validate=is_int)
+    full_name: FullName = Attribute(key='fullName', attachment=FullName)
 
 
 @dataclass
-class SubNested(Class):
-    @staticmethod
-    def asd():
-        return 'Hello world!'
+class User(Person):
+    birthday: datetime = Attribute(deserialize=timestamp_to_date, serialize=date_to_timestamp)
 
 
-@dataclass
-class Nested(Class):
-    a: Attribute = Attribute(attachment=SubNested)
-    b: Attribute = Attribute()
-
-    def test(self):
-        pass
+if __name__ == '__main__'
+    # create instance and serialize
+    full_name = FullName('John', 'Smith')
+    user = User(12345, full_name, datetime.fromtimestamp(1193875200))
+    print(user.serialize())  #  {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
 
 
-@dataclass
-class Test(Class):
-    a: Attribute = Attribute()
-    b: Attribute = Attribute(attachment=Nested)
+    # deserialize and serialize
+    user = User.deserialize({'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
+    print(user.serialize())  # {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
 
-
-test = Class.deserialize({'a': 1, 'b': {'a': 2, 'b': 3}})
-print(test.b.a.asd())  # Hello world!
-print(test.serialize())  # {'a': 1, 'b': {'a': {}, 'b': 3}}
-```
+    # validate raise ValueError: Attribute id validation error.
+    User.deserialize({'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
