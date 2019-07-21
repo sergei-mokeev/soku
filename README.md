@@ -35,6 +35,9 @@ class FullName(Class):
     first_name: str = Attribute(key='firstName')
     last_name: str = Attribute(key='lastName')
 
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 @dataclass
 class Person(Class):
@@ -56,6 +59,7 @@ if __name__ == '__main__':
 
     # deserialize and serialize
     user = User.deserialize({'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
+    print(user.full_name.full_name())  # John Smith
     print(user.serialize())  # {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
 
     # validate
@@ -63,5 +67,4 @@ if __name__ == '__main__':
         User.deserialize({'id': '12345', 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}})
     except ValueError as exc:
         print(exc)  # Key id validation error.
-
 ```

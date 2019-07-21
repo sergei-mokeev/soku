@@ -21,6 +21,9 @@ class FullName(Class):
     first_name: str = Attribute(key='firstName')
     last_name: str = Attribute(key='lastName')
 
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 @dataclass
 class Person(Class):
@@ -42,6 +45,7 @@ class Tests(TestCase):
         self.assertIsInstance(user.full_name, FullName)
         self.assertIsInstance(user.birthday, datetime)
         self.assertEqual(user.full_name.first_name, 'John')
+        self.assertEqual(user.full_name.full_name(), 'John Smith')
         self.assertEqual(
             user.serialize(),
             {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
@@ -54,6 +58,7 @@ class Tests(TestCase):
         self.assertIsInstance(user.full_name, FullName)
         self.assertIsInstance(user.birthday, datetime)
         self.assertEqual(user.full_name.first_name, 'John')
+        self.assertEqual(user.full_name.full_name(), 'John Smith')
         self.assertEqual(
             user.serialize(),
             {'id': 12345, 'birthday': 1193875200, 'fullName': {'firstName': 'John', 'lastName': 'Smith'}}
