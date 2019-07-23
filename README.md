@@ -21,7 +21,7 @@ from soku import Class, Attribute
 
 
 def is_int(_, value):  # validator must be callable and return bool or raise exception
-    return type(value) is int
+    return isinstance(value, int)
 
 
 def timestamp_to_date(value):
