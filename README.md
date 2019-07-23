@@ -1,16 +1,18 @@
-# SoKu [![Codacy Badge](https://api.codacy.com/project/badge/Grade/15047237ccab49048a214be614675b1e)](https://www.codacy.com/app/SergeyMokeyev/soku?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SergeyMokeyev/soku&amp;utm_campaign=Badge_Grade)
+# SoKu 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/15047237ccab49048a214be614675b1e)](https://www.codacy.com/app/SergeyMokeyev/soku?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SergeyMokeyev/soku&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/15047237ccab49048a214be614675b1e)](https://www.codacy.com/app/SergeyMokeyev/soku?utm_source=github.com&utm_medium=referral&utm_content=SergeyMokeyev/soku&utm_campaign=Badge_Coverage)
 
 SoKu is small library for serialize and deserialize python object to JSON and back. 
 This library is useful for conversation between micro services, see example. 
 It can to serialize from object and back, validate when deserialize and use custom deserializer and serializer.
 
-#### Installation
+**Installation**
 
 ```bash
 pip install soku
 ```
 
-#### Example
+**Example**
 
 ```python
 from datetime import datetime
