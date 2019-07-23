@@ -5,7 +5,7 @@ from soku import Class, Attribute
 
 
 def is_int(_, value):
-    return type(value) is int
+    return isinstance(value, int)
 
 
 def timestamp_to_date(value):
