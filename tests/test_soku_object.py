@@ -36,7 +36,7 @@ class User(Person):
     birthday: datetime = Attribute(deserialize=timestamp_to_date, serialize=date_to_timestamp)
 
 
-class Tests(TestCase):
+class ObjectTests(TestCase):
     def test_create_instance_and_serialize(self):
         full_name = FullName('John', 'Smith')
         date = datetime.fromtimestamp(1193875200)
