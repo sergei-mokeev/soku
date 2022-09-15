@@ -1,7 +1,7 @@
 from unittest import TestCase
 from datetime import datetime
 from dataclasses import dataclass
-from soku_object import Class, Attribute
+from soku_object import Object, Attribute
 
 
 def is_int(_, value):
@@ -17,7 +17,7 @@ def date_to_timestamp(value):
 
 
 @dataclass
-class FullName(Class):
+class FullName(Object):
     first_name: str = Attribute(key='firstName')
     last_name: str = Attribute(key='lastName')
 
@@ -26,7 +26,7 @@ class FullName(Class):
 
 
 @dataclass
-class Person(Class):
+class Person(Object):
     id: int = Attribute(validate=is_int)
     full_name: FullName = Attribute(key='fullName', attach=FullName)
 

@@ -21,7 +21,7 @@ class Attribute:
         return instance.__dict__[self.name]
 
 
-class Class:
+class Object:
     def serialize(self) -> dict:
         result = {}
         for key, attribute in {key: attribute for key, attribute
