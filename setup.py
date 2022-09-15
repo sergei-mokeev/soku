@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='soku',
-    version='2.1.0',
+    version='3.0.0',
     author='Sergey Mokeyev',
     author_email='sergey.mokeyev@gmail.com',
     description='Template for microservices',
