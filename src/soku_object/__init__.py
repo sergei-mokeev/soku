@@ -1,4 +1,4 @@
-from typing import Callable, Type
+import typing as t
 from inspect import getmembers
 
 
@@ -7,29 +7,29 @@ class Attribute:
             self,
             *,
             key: str = None,
-            validate: Callable = None,
-            deserialize: Callable = None,
-            serialize: Callable = None,
-            attach: Type['Object'] = None
-    ):
+            validate: t.Callable = None,
+            deserialize: t.Callable = None,
+            serialize: t.Callable = None,
+            attach: t.Type['Object'] = None
+    ) -> None:
         self.key = key
         self.validate = validate
         self.deserialize = deserialize
         self.serialize = serialize
         self.attach = attach
 
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: 'Object', name: str) -> None:
         self.name = name
 
-    def __set__(self, instance, value):
+    def __set__(self, instance: 'Object', value: t.Any) -> None:
         instance.__dict__[self.name] = value
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance: t.Optional['Object'], owner: 'Object') -> None:
         return instance.__dict__[self.name]
 
 
 class Object:
-    def serialize(self) -> dict:
+    def serialize(self) -> t.Dict:
         result = {}
         for key, attribute in {
             key: attribute for key, attribute in getmembers(self.__class__) if isinstance(attribute, Attribute)
@@ -47,7 +47,7 @@ class Object:
         return result
 
     @classmethod
-    def deserialize(cls, data: dict) -> 'Object':
+    def deserialize(cls, data: t.Dict) -> 'Object':
         result = {}
         for key, attribute in {
             key: attribute for key, attribute in getmembers(cls) if isinstance(attribute, Attribute)
