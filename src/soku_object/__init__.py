@@ -3,8 +3,15 @@ from inspect import getmembers
 
 
 class Attribute:
-    def __init__(self, *, key: str = None, validate: Callable = None,
-                 deserialize: Callable = None, serialize: Callable = None, attach: Type['Class'] = None):
+    def __init__(
+            self,
+            *,
+            key: str = None,
+            validate: Callable = None,
+            deserialize: Callable = None,
+            serialize: Callable = None,
+            attach: Type['Object'] = None
+    ):
         self.key = key
         self.validate = validate
         self.deserialize = deserialize
@@ -24,27 +31,38 @@ class Attribute:
 class Object:
     def serialize(self) -> dict:
         result = {}
-        for key, attribute in {key: attribute for key, attribute
-                               in getmembers(self.__class__) if isinstance(attribute, Attribute)}.items():
+        for key, attribute in {
+            key: attribute for key, attribute in getmembers(self.__class__) if isinstance(attribute, Attribute)
+        }.items():
             value = getattr(self, key)
+
             if attribute.serialize:
                 value = attribute.serialize(value)
+
             if attribute.attach:
                 value = attribute.attach.serialize(value)
+
             result.update({attribute.key or key: value})
+
         return result
 
     @classmethod
-    def deserialize(cls, data: dict) -> 'Class':
+    def deserialize(cls, data: dict) -> 'Object':
         result = {}
-        for key, attribute in {key: attribute for key, attribute
-                               in getmembers(cls) if isinstance(attribute, Attribute)}.items():
+        for key, attribute in {
+            key: attribute for key, attribute in getmembers(cls) if isinstance(attribute, Attribute)
+        }.items():
             value = data.get(attribute.key or key)
+
             if attribute.validate and not attribute.validate(attribute.key or key, value):
                 raise ValueError(f'Key {attribute.key or key} validation error.')
+
             if attribute.deserialize:
                 value = attribute.deserialize(value)
+
             if attribute.attach:
                 value = attribute.attach.deserialize(value)
+
             result.update({key: value})
+
         return cls(**result)
