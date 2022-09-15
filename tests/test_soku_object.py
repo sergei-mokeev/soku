@@ -1,7 +1,7 @@
 from unittest import TestCase
 from datetime import datetime
 from dataclasses import dataclass
-from soku import Class, Attribute
+from soku_object import Class, Attribute
 
 
 def is_int(_, value):

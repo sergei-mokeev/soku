@@ -1,24 +1,20 @@
-import setuptools
+from setuptools import setup, find_packages
 
 
-setuptools.setup(
+setup(
     name='soku',
-    version='2.0.3',
+    version='2.1.0',
     author='Sergey Mokeyev',
     author_email='sergey.mokeyev@gmail.com',
-    description='Serialize and deserialize python object to JSON and back',
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
+    description='Template for microservices',
     url='https://github.com/SergeyMokeyev/soku',
-    data_files=[
-        ('README.md', ['README.md'])
-    ],
-    packages=[
-        'soku'
-    ],
+    package_dir={'': 'src'},
+    packages=find_packages('src'),
     classifiers=[
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
     ],
-    install_requires=[]
+    install_requires=[
+        'aiohttp>=3.8.1,<4'
+    ]
 )
