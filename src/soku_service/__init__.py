@@ -5,9 +5,9 @@ from aiohttp.web import Application, AppRunner, TCPSite
 
 
 class Service:
-    def __init__(self, config: Configuration) -> None:
+    def __init__(self, config: Configuration = None) -> None:
         self.__loop = asyncio.get_event_loop()
-        self.__config = config
+        self.__config = config or Configuration()
         self.__logger = logging.getLogger()
         self.__app = None
 
@@ -63,17 +63,3 @@ class Service:
 
     def set_aiohttp_app(self, app: Application) -> None:
         self.__app = app
-
-
-if __name__ == '__main__':
-    from aiohttp.web import json_response
-
-    async def test(_):
-        return json_response({'test': 1})
-
-    s = Service(Configuration())
-    a = Application()
-    a.router.add_route('GET', '/', test)
-    s.set_aiohttp_app(a)
-    s.run()
-
