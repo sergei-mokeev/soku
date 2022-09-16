@@ -23,7 +23,7 @@ class TesConfig(Configuration):
 class ConfigurationTests(TestCase):
     @patch.object(argparse.ArgumentParser, 'parse_args')
     def setUp(self, mock_method) -> None:
-        mock_method.return_value = argparse.Namespace(ARG='test_arg')
+        mock_method.return_value = argparse.Namespace(arg='test_arg')
         self.conf = TesConfig()
 
     def test_int(self):

@@ -14,14 +14,14 @@ class Configuration:
                 except AttributeError:
                     pass
 
-                parser.add_argument(f'--{key}', type=_cls, default=None)
+                parser.add_argument(f'--{key.lower()}', type=_cls, default=None)
                 args = parser.parse_args()
 
-                if args.__dict__.get(key):
-                    value = args.__dict__[key]
+                if args.__dict__.get(key.lower()):
+                    value = args.__dict__[key.lower()]
 
-                if environ.get(key):
-                    value = environ[key]
+                if environ.get(key.upper()):
+                    value = environ[key.upper()]
 
                 if value is None:
                     raise ValueError(f'Can not set configuration parameters {key}')
@@ -39,4 +39,4 @@ class Configuration:
 
                         value = _value
 
-                self.__setattr__(key, _cls(value))
+                self.__setattr__(key.upper(), _cls(value))

@@ -5,13 +5,17 @@ from aiohttp.web import Application, AppRunner, TCPSite
 
 
 class Service:
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO)
-
     def __init__(self, config: Configuration) -> None:
         self.__loop = asyncio.get_event_loop()
         self.__config = config
         self.__logger = logging.getLogger()
         self.__app = None
+
+        log_level = logging.INFO
+        if hasattr(self.config, 'LOG_LEVEL'):
+            log_level = self.config.LOG_LEVEL.upper()
+
+        logging.basicConfig(format='%(asctime)s %(levelname)-7s %(message)s', level=log_level)
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -47,8 +51,14 @@ class Service:
             self.logger.info(f'Web interface start on {host}:{port}')
 
     def run(self) -> None:
-        self.logger.info('Service is started')
+        if hasattr(self.config, 'NAME'):
+            self.logger.info(f'Service {self.config.NAME} is started')
+
+        else:
+            self.logger.info('Service is started')
+
         self.loop.create_task(self.__start_aiohttp_app())
+
         self.loop.run_forever()
 
     def set_aiohttp_app(self, app: Application) -> None:
